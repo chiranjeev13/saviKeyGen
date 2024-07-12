@@ -1,0 +1,24 @@
+{
+  "name": "keyx",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^12.1.0",
+    "@types/node": "^20.14.10",
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.2.0",
+    "crypto-ts": "^1.0.2",
+    "cryptography": "^1.2.3",
+    "dotenv": "^16.4.5",
+    "stellar-sdk": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2"
+  }
+}
