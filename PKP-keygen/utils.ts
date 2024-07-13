@@ -52,6 +52,11 @@ export async function contractCall(account: string, secretKey: string, accessCon
             }
         }
         console.log('Transaction hash:',JSON.parse(JSON.stringify(await server.getTransaction(transactionResult.hash))).returnValue._value);
+        const val = JSON.parse(JSON.stringify(await server.getTransaction(transactionResult.hash))).returnValue._value
+        if(val.toString() !== accessControl.result)
+        {
+            throw new Error("No ACCESS CONTROL PRESENT!!")
+        }
     } catch (error) {
         console.error('Error calling contract function:', error);
     }
@@ -85,15 +90,34 @@ export async function Hash(data:any): Promise<any>
     return hash_data
 }
 
-export async function signMessage(accessControl:AccessControlType,data:any,secretKey:string) {
-    const iD = Hash(data).toString();
-    const h_A = Hash(accessControl).toString();
+export async function signMessage_encrypt(accessControl:AccessControlType,data:any,secretKey:string):Promise<{ sig: string, iD: string }> {
+    const mod_accessControl = {
+    contractAddress: accessControl.contractAddress,
+    methodName: accessControl.methodName,
+    result: accessControl.result
+    }
+    const iD = (await Hash(data)).toString();
+    const h_A = (await Hash(JSON.stringify(mod_accessControl))).toString();
     const D = iD.concat(h_A);
     const F = Keypair.fromSecret(secretKey)
     const bufferD = Buffer.from(D);
     const r = F.sign(bufferD);
-    console.log(r.toString("hex"))
-    
+    return { sig: r.toString("hex"), iD: iD };
+
+}
+export async function signMessage_decrypt(accessControl:AccessControlType,iD:any,secretKey:string):Promise<{ sig: string, iD: string }> {
+    await contractCall((await generateStellarKeyPair(secretKey)).publicKey,secretKey,accessControl);
+    const mod_accessControl = {
+        contractAddress: accessControl.contractAddress,
+        methodName: accessControl.methodName,
+        result: accessControl.result
+        }
+    const h_A = (await Hash(JSON.stringify(mod_accessControl))).toString();
+    const D = iD.concat(h_A);
+    const F =  Keypair.fromSecret(secretKey)
+    const bufferD = Buffer.from(D);
+    const r = F.sign(bufferD);
+    return { sig: r.toString("hex"), iD: iD };
 }
 // main("CAWHPCYDI6CP6DB2ZGZKYQYUP3BUZPDMBG3HUXREYVVPDRKVZ5ETYAQC","is_user_registered",["GCJTZ3O5ZDWAJUKG52VS42OXX324DLARMHQFV7YO7NAFIQL3KS2ONHRS"])
 // .catch(error => console.error('Unhandled error:', error));
